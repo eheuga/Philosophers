@@ -1,4 +1,4 @@
-#include "../philo.h"
+#include "philo.h"
 
 void init_data (t_data *data, int ac, char **av)
 {
@@ -13,4 +13,5 @@ void init_data (t_data *data, int ac, char **av)
 
     data->philos = malloc(sizeof(t_philo) * data->nb_philos);
     data->forks = malloc(sizeof(pthread_mutex_t) * data->nb_philos);
+    data->stop =0;
 }
