@@ -6,12 +6,12 @@ int main (int ac, char** av)
     t_data data;
 
     (void)ac;
-    data.start_time = get_time();
 
     init_data(&data, ac, av);
     init_mutex(&data);
+    data.start_time = get_time();
     init_philos(&data);
-    
+
     int i = 0;
     long long last_meal;
     long long time_check;
@@ -23,8 +23,8 @@ int main (int ac, char** av)
         pthread_create(&data.philos[i].thread, NULL, routine, &data.philos[i]);
         i++;
     }
-    
-    while (!data.stop){
+
+	while (!check_stop(&data)){
         i = 0;
         full = 0;
         while (i < data.nb_philos)
@@ -32,11 +32,11 @@ int main (int ac, char** av)
             pthread_mutex_lock(&data.meal_mutex);
             last_meal = data.philos[i].last_meal_time;
             meal_count = data.philos[i].meals_eaten;
+            time_check = get_time() - last_meal;
             pthread_mutex_unlock(&data.meal_mutex);
             if (meal_count >= data.nb_of_meals && data.nb_of_meals != -1)
                 full++;
-            time_check = get_time() - last_meal;
-            if (time_check > data.time_to_die){
+            if (time_check >= data.time_to_die){
                 pthread_mutex_lock(&data.print_mutex);
                 printf("%lld %d died\n", get_time() - data.start_time, data.philos[i].id);
                 pthread_mutex_unlock(&data.print_mutex);
@@ -52,7 +52,7 @@ int main (int ac, char** av)
             data.stop = 1;
             pthread_mutex_unlock(&data.someone_died_mutex);
             break;
-        }    
+        }
         usleep(500);
     }
 
@@ -62,5 +62,6 @@ int main (int ac, char** av)
         pthread_join(data.philos[i].thread, NULL);
         i++;
     }
+	free_all(&data);
     return 0;
 }
